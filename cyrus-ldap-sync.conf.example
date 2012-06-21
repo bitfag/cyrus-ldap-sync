@@ -1,0 +1,10 @@
+ldap_uri = 'ldaps://ldap.example.org'
+imap_uri = 'imaps://mail-int.example.org:993'
+
+base_dn = 'ou=People,dc=example,dc=org'
+
+cyrus_admin = 'cyrus'
+cyrus_pass = 'password'
+
+# quota in KB
+mailbox_quota = '307200'
