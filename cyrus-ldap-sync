@@ -31,17 +31,16 @@ for dn, entry in r:
 		if len(m) == 0:
 			print 'creating mailbox user.%s' % u
 			imap.cm("user." + u)
+		# get/set quota
+		try:
+			q = imap.lq("user." + u)
+		except cyruslib.CYRUSError, e:
+			# if no quota, create it
+			if e[0] == 45:
+				print 'creating quota for user: %s' % u
+				imap.sq("user." + u, config['mailbox_quota'])
 		else:
-			# get/set quota
-			try:
-				q = imap.lq("user." + u)
-			except cyruslib.CYRUSError, e:
-				# if no quota, create it
-				if e[0] == 45:
-					print 'creating quota for user: %s' % u
-					imap.sq("user." + u, config['mailbox_quota'])
-			else:
-				print 'quota usage: %d/%d' % q
+			print 'quota usage: %d/%d' % q
 	except cyruslib.CYRUSError, e:
 		print "%s: %s" % (e[1], e[2])
 	# additionally, form uid list
