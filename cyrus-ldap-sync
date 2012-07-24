@@ -41,6 +41,10 @@ for dn, entry in r:
 				imap.sq("user." + u, config['mailbox_quota'])
 		else:
 			print 'quota usage: %d/%d' % q
+			# update quota according to config value
+			if q[1] != int(config['mailbox_quota']):
+				print 'updating quota for user: %s' %u
+				imap.sq("user." + u, config['mailbox_quota'])
 	except cyruslib.CYRUSError, e:
 		print "%s: %s" % (e[1], e[2])
 	# additionally, form uid list
