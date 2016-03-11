@@ -54,10 +54,10 @@ for dn, entry in r:
 umboxlist = imap.lm('user.*')
 # look whether mbox have corresponding ldap user or not
 for mbox in umboxlist:
-    mbox_u = mbox.split('.')[1]
-    if mbox_u not in ulist:
-        try:
-            print 'deleting mailbox of user: %s' % mbox_u
-            imap.dm(mbox)
-        except cyruslib.CYRUSError, e:
-            print "%s: %s" % (e[1], e[2])
+    if mbox.count('.') < 2:
+        if mbox not in ulist:
+            try:
+                print 'deleting mailbox of user: %s' % mbox
+                imap.dm(mbox)
+            except cyruslib.CYRUSError, e:
+                print "%s: %s" % (e[1], e[2])
