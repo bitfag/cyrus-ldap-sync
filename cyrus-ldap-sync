@@ -10,7 +10,7 @@ l = ldap.initialize(config['ldap_uri'])
 imap = cyruslib.CYRUS(config['imap_uri'])
 
 # bind to ldap server
-l.simple_bind_s("","")
+l.simple_bind_s(config['bind_dn'], config['bind_pass'])
 
 # get all uids of users with mail atrtribute
 r = l.search_s(config['base_dn'], ldap.SCOPE_SUBTREE, '(mail=*)',['uid'])
