@@ -4,60 +4,65 @@ import configobj
 import ldap
 import cyruslib
 
-config = configobj.ConfigObj('cyrus-ldap-sync.conf')
 
-l = ldap.initialize(config['ldap_uri'])
-imap = cyruslib.CYRUS(config['imap_uri'])
+def main():
+    config = configobj.ConfigObj('cyrus-ldap-sync.conf')
 
-# bind to ldap server
-l.simple_bind_s(config['bind_dn'], config['bind_pass'])
+    l = ldap.initialize(config['ldap_uri'])
+    imap = cyruslib.CYRUS(config['imap_uri'])
 
-# get all uids of users with mail atrtribute
-r = l.search_s(config['base_dn'], ldap.SCOPE_SUBTREE, '(mail=*)', ['cn'])
+    # bind to ldap server
+    l.simple_bind_s(config['bind_dn'], config['bind_pass'])
 
-# login to cyrus
-try:
-    imap.login(config['cyrus_admin'], config['cyrus_pass'])
-except cyruslib.CYRUSError, e:
-    print "%s: %s" % (e[1], e[2])
+    # get all uids of users with mail atrtribute
+    r = l.search_s(config['base_dn'], ldap.SCOPE_SUBTREE, '(mail=*)', ['cn'])
 
-# create accounts for all users
-ulist = []
-for dn, entry in r:
-    u = entry['cn'][0]
+    # login to cyrus
     try:
-        print 'looking for mailbox of user: %s' % u
-        m = imap.lm("user." + u)
-        if len(m) == 0:
-            print 'creating mailbox user.%s' % u
-            imap.cm("user." + u)
-        # get/set quota
-        try:
-            q = imap.lq("user." + u)
-        except cyruslib.CYRUSError, e:
-            # if no quota, create it
-            if e[0] == 45:
-                print 'creating quota for user: %s' % u
-                imap.sq("user." + u, config['mailbox_quota'])
-        else:
-            print 'quota usage: %d/%d' % q
-            # update quota according to config value
-            if q[1] != int(config['mailbox_quota']):
-                print 'updating quota for user: %s' %u
-                imap.sq("user." + u, config['mailbox_quota'])
+        imap.login(config['cyrus_admin'], config['cyrus_pass'])
     except cyruslib.CYRUSError, e:
         print "%s: %s" % (e[1], e[2])
-    # additionally, form uid list
-    ulist.append(u)
 
-# list all user mailboxes
-umboxlist = imap.lm('user.*')
-# look whether mbox have corresponding ldap user or not
-for mbox in umboxlist:
-    if mbox.count('.') < 2:
-        if mbox not in ulist:
+    # create accounts for all users
+    ulist = []
+    for dn, entry in r:
+        u = entry['cn'][0]
+        try:
+            print 'looking for mailbox of user: %s' % u
+            m = imap.lm("user." + u)
+            if len(m) == 0:
+                print 'creating mailbox user.%s' % u
+                imap.cm("user." + u)
+            # get/set quota
             try:
-                print 'deleting mailbox of user: %s' % mbox
-                imap.dm(mbox)
+                q = imap.lq("user." + u)
             except cyruslib.CYRUSError, e:
-                print "%s: %s" % (e[1], e[2])
+                # if no quota, create it
+                if e[0] == 45:
+                    print 'creating quota for user: %s' % u
+                    imap.sq("user." + u, config['mailbox_quota'])
+            else:
+                print 'quota usage: %d/%d' % q
+                # update quota according to config value
+                if q[1] != int(config['mailbox_quota']):
+                    print 'updating quota for user: %s' %u
+                    imap.sq("user." + u, config['mailbox_quota'])
+        except cyruslib.CYRUSError, e:
+            print "%s: %s" % (e[1], e[2])
+        # additionally, form uid list
+        ulist.append(u)
+
+    # list all user mailboxes
+    umboxlist = imap.lm('user.*')
+    # look whether mbox have corresponding ldap user or not
+    for mbox in umboxlist:
+        if mbox.count('.') < 2:
+            if mbox not in ulist:
+                try:
+                    print 'deleting mailbox of user: %s' % mbox
+                    imap.dm(mbox)
+                except cyruslib.CYRUSError, e:
+                    print "%s: %s" % (e[1], e[2])
+
+if __name__ == '__main__':
+    main()
