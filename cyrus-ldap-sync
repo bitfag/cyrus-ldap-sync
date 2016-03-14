@@ -57,7 +57,8 @@ def main():
     # look whether mbox have corresponding ldap user or not
     for mbox in umboxlist:
         if mbox.count('.') < 2:
-            if mbox not in ulist:
+            mbox_u = mbox.split('.')[1]
+            if mbox_u not in ulist:
                 try:
                     print 'deleting mailbox of user: %s' % mbox
                     imap.dm(mbox)
