@@ -25,7 +25,7 @@ def main():
     # bind to ldap server
     l.simple_bind_s(config['bind_dn'], config['bind_pass'])
 
-    # get all uids of users with mail atrtribute
+    # get all CN's of users with mail atrtribute
     r = l.search_s(config['base_dn'], ldap.SCOPE_SUBTREE, '(mail=*)', ['cn'])
 
     # login to cyrus
