@@ -3,10 +3,21 @@
 import configobj
 import ldap
 import cyruslib
-
+import argparse
 
 def main():
-    config = configobj.ConfigObj('cyrus-ldap-sync.conf')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', help='Use specified config file (default: cyrus-ldap-sync.conf')
+    parser.add_argument('-n', '--dry-run', help='Simulate run, do not do anything real', action='store_true')
+    args = parser.parse_args()
+
+    # load config
+    if not args.config:
+        conffile = 'cyrus-ldap-sync.conf'
+    else:
+        conffile = args.config
+    config = configobj.ConfigObj(conffile)
 
     l = ldap.initialize(config['ldap_uri'])
     imap = cyruslib.CYRUS(config['imap_uri'])
