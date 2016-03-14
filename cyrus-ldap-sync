@@ -43,7 +43,8 @@ def main():
             m = imap.lm("user." + u)
             if len(m) == 0:
                 print 'creating mailbox user.%s' % u
-                imap.cm("user." + u)
+                if not args.dry_run:
+                    imap.cm("user." + u)
             # get/set quota
             try:
                 q = imap.lq("user." + u)
@@ -51,13 +52,15 @@ def main():
                 # if no quota, create it
                 if e[0] == 45:
                     print 'creating quota for user: %s' % u
-                    imap.sq("user." + u, config['mailbox_quota'])
+                    if not args.dry_run:
+                        imap.sq("user." + u, config['mailbox_quota'])
             else:
                 print 'quota usage: %d/%d' % q
                 # update quota according to config value
                 if q[1] != int(config['mailbox_quota']):
-                    print 'updating quota for user: %s' %u
-                    imap.sq("user." + u, config['mailbox_quota'])
+                    print 'updating quota for user: %s' % u
+                    if not args.dry_run:
+                        imap.sq("user." + u, config['mailbox_quota'])
         except cyruslib.CYRUSError, e:
             print "%s: %s" % (e[1], e[2])
         # additionally, form uid list
@@ -72,7 +75,8 @@ def main():
             if mbox_u not in ulist:
                 try:
                     print 'deleting mailbox of user: %s' % mbox
-                    imap.dm(mbox)
+                    if not args.dry_run:
+                        imap.dm(mbox)
                 except cyruslib.CYRUSError, e:
                     print "%s: %s" % (e[1], e[2])
 
