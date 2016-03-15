@@ -68,9 +68,9 @@ def main():
     if args.setquota:
         if not args.username:
             fatal('--setquota requires --username')
+        log.info('setting new quota for user: %s', args.username)
         if not args.dry_run:
             try:
-                log.info('setting new quota for user: %s', args.username)
                 imap.sq("user." + args.username, args.setquota)
             except cyruslib.CYRUSError, e:
                 print "%s: %s" % (e[1], e[2])
