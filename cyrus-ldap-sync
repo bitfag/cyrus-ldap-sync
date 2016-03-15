@@ -36,6 +36,7 @@ def main():
         conffile = args.config
     config = configobj.ConfigObj(conffile)
 
+    global l
     l = ldap.initialize(config['ldap_uri'])
     imap = cyruslib.CYRUS(config['imap_uri'])
 
