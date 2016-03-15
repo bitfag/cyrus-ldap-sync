@@ -4,18 +4,20 @@ import configobj
 import ldap
 import cyruslib
 import argparse
+import os
 import sys
+import logging
 
 def unbind():
     l.unbind_s()
 
 def fatal(message):
-    print message
+    log.error(message)
     unbind()
     sys.exit(1)
 
 def clean_exit(message):
-    print message
+    log.info(message)
     unbind()
     sys.exit(0)
 
@@ -23,11 +25,22 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', help='Use specified config file (default: cyrus-ldap-sync.conf')
+    parser.add_argument('-d', '--debug', help='Print lot\'s of messages', action='store_true')
     parser.add_argument('-n', '--dry-run', help='Simulate run, do not do anything real', action='store_true')
     parser.add_argument('-s', '--setquota', help='Set quota with SIZE for specified user', metavar='SIZE')
     parser.add_argument('-u', '--username', help='Username for quota modification')
-
     args = parser.parse_args()
+
+    # create logger
+    global log
+    log = logging.getLogger(os.path.basename(__file__))
+    log.setLevel(logging.INFO)
+    if args.debug == True:
+        log.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("%(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
 
     # load config
     if not args.config:
@@ -50,14 +63,14 @@ def main():
     try:
         imap.login(config['cyrus_admin'], config['cyrus_pass'])
     except cyruslib.CYRUSError, e:
-        print "%s: %s" % (e[1], e[2])
+        fatal("%s: %s", (e[1], e[2]))
 
     if args.setquota:
         if not args.username:
             fatal('--setquota requires --username')
         if not args.dry_run:
             try:
-                print 'setting new quota for user: %s' % args.username
+                log.info('setting new quota for user: %s', args.username)
                 imap.sq("user." + args.username, args.setquota)
             except cyruslib.CYRUSError, e:
                 print "%s: %s" % (e[1], e[2])
@@ -69,10 +82,10 @@ def main():
     for dn, entry in r:
         u = entry['cn'][0]
         try:
-            print '\nlooking for mailbox of user: %s' % u
+            log.debug('looking for mailbox of user: %s', u)
             m = imap.lm("user." + u)
             if len(m) == 0:
-                print 'creating mailbox user.%s' % u
+                log.info('creating mailbox user.%s', u)
                 if not args.dry_run:
                     imap.cm("user." + u)
             # get/set quota
@@ -81,15 +94,15 @@ def main():
             except cyruslib.CYRUSError, e:
                 # if no quota, create it
                 if e[0] == 45:
-                    print 'creating quota for user: %s' % u
+                    log.info('creating quota for user: %s', u)
                     if not args.dry_run:
                         imap.sq("user." + u, config['mailbox_quota'])
             else:
-                print 'quota usage: %d/%d' % q
+                log.debug('quota usage: %d/%d', q[0], q[1])
                 if q[0] > q[1]:
-                    print 'Warning: quota limit is reached'
+                    log.warning('quota limit is reached for user: %s', u)
         except cyruslib.CYRUSError, e:
-            print "%s: %s" % (e[1], e[2])
+            fatal("%s: %s", (e[1], e[2]))
         # additionally, form uid list
         ulist.append(u)
 
@@ -101,11 +114,11 @@ def main():
             mbox_u = mbox.split('.')[1]
             if mbox_u not in ulist:
                 try:
-                    print 'deleting mailbox of user: %s' % mbox
+                    log.info('deleting mailbox of user: %s', mbox)
                     if not args.dry_run:
                         imap.dm(mbox)
                 except cyruslib.CYRUSError, e:
-                    print "%s: %s" % (e[1], e[2])
+                    fatal("%s: %s", (e[1], e[2]))
 
 if __name__ == '__main__':
     main()
