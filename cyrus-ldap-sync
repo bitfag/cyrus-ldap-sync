@@ -24,6 +24,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', help='Use specified config file (default: cyrus-ldap-sync.conf')
     parser.add_argument('-n', '--dry-run', help='Simulate run, do not do anything real', action='store_true')
+    parser.add_argument('-s', '--setquota', help='Set quota with SIZE for specified user', metavar='SIZE')
+    parser.add_argument('-u', '--username', help='Username for quota modification')
+
     args = parser.parse_args()
 
     # load config
@@ -47,6 +50,18 @@ def main():
         imap.login(config['cyrus_admin'], config['cyrus_pass'])
     except cyruslib.CYRUSError, e:
         print "%s: %s" % (e[1], e[2])
+
+    if args.setquota:
+        if not args.username:
+            fatal('--setquota requires --username')
+        if not args.dry_run:
+            try:
+                print 'setting new quota for user: %s' % args.username
+                imap.sq("user." + args.username, args.setquota)
+            except cyruslib.CYRUSError, e:
+                print "%s: %s" % (e[1], e[2])
+        q = imap.lq("user." + args.username)
+        clean_exit('new quota usage: %d/%d' % q)
 
     # create accounts for all users
     ulist = []
