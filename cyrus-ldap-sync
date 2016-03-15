@@ -39,7 +39,7 @@ def main():
     for dn, entry in r:
         u = entry['cn'][0]
         try:
-            print 'looking for mailbox of user: %s' % u
+            print '\nlooking for mailbox of user: %s' % u
             m = imap.lm("user." + u)
             if len(m) == 0:
                 print 'creating mailbox user.%s' % u
