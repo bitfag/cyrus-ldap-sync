@@ -56,6 +56,8 @@ def main():
                         imap.sq("user." + u, config['mailbox_quota'])
             else:
                 print 'quota usage: %d/%d' % q
+                if q[0] > q[1]:
+                    print 'Warning: quota limit is reached'
         except cyruslib.CYRUSError, e:
             print "%s: %s" % (e[1], e[2])
         # additionally, form uid list
