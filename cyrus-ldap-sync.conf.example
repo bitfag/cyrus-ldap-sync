@@ -9,4 +9,4 @@ cyrus_admin = 'cyrus'
 cyrus_pass = 'password'
 
 # quota in KB
-mailbox_quota = '307200'
+default_mailbox_quota = '307200'

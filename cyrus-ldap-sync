@@ -96,7 +96,7 @@ def main():
                 if e[0] == 45:
                     log.info('creating quota for user: %s', u)
                     if not args.dry_run:
-                        imap.sq("user." + u, config['mailbox_quota'])
+                        imap.sq("user." + u, config['default_mailbox_quota'])
             else:
                 log.debug('quota usage: %d/%d', q[0], q[1])
                 if q[0] > q[1]:
