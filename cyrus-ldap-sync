@@ -119,6 +119,7 @@ def main():
                         imap.dm(mbox)
                 except cyruslib.CYRUSError, e:
                     fatal("%s: %s".format(e[1], e[2]))
+    unbind()
 
 if __name__ == '__main__':
     main()
