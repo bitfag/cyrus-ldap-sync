@@ -24,7 +24,7 @@ def clean_exit(message):
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', help='Use specified config file (default: cyrus-ldap-sync.conf')
+    parser.add_argument('-c', '--config', help='Use specified config file (default: /etc/cyrus-ldap-sync.conf')
     parser.add_argument('-d', '--debug', help='Print lot\'s of messages', action='store_true')
     parser.add_argument('-n', '--dry-run', help='Simulate run, do not do anything real', action='store_true')
     parser.add_argument('-s', '--setquota', help='Set quota with SIZE for specified user', metavar='SIZE')
@@ -44,7 +44,7 @@ def main():
 
     # load config
     if not args.config:
-        conffile = 'cyrus-ldap-sync.conf'
+        conffile = '/etc/cyrus-ldap-sync.conf'
     else:
         conffile = args.config
     config = configobj.ConfigObj(conffile)
