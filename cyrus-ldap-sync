@@ -29,6 +29,7 @@ def main():
     parser.add_argument('-n', '--dry-run', help='Simulate run, do not do anything real', action='store_true')
     parser.add_argument('-s', '--setquota', help='Set quota with SIZE for specified user', metavar='SIZE')
     parser.add_argument('-u', '--username', help='Username for quota modification')
+    parser.add_argument('--showquota', help='Display current quota for user', action='store_true')
     args = parser.parse_args()
 
     # create logger
@@ -64,6 +65,16 @@ def main():
         imap.login(config['cyrus_admin'], config['cyrus_pass'])
     except cyruslib.CYRUSError, e:
         fatal("{}: {}".format(e[1], e[2]))
+
+    if args.showquota:
+        if not args.username:
+            fatal('--setquota requires --username')
+        try:
+            q = imap.lq("user." + args.username)
+        except cyruslib.CYRUSError, e:
+            fatal("{}: {}".format(e[1], e[2]))
+
+        clean_exit('quota usage for %s: %d/%d' % (args.username, q[0], q[1]))
 
     if args.setquota:
         if not args.username:
