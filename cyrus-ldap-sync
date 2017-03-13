@@ -98,7 +98,10 @@ def main():
             if len(m) == 0:
                 log.info('creating mailbox user.%s', u)
                 if not args.dry_run:
-                    imap.cm("user." + u)
+                    try:
+                        imap.cm("user." + u)
+                    except cyruslib.CYRUSError, e:
+                        print "%s: %s" % (e[1], e[2])
             # get/set quota
             try:
                 q = imap.lq("user." + u)
